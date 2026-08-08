@@ -143,6 +143,23 @@ namespace Lodge {
         }
     }
 
+    void Solver::applyCombustion(Grid &grid, float dt, float burnRate, float heatRelease, float smokeRelease) {
+        const int width = grid.width();
+        const int height = grid.height();
+
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                const float fuel = grid.fuel(i, j);
+                if (fuel <= 0.0f) continue;
+                const float burned = std::min(fuel, burnRate * dt);
+
+                grid.setFuel(i, j, fuel - burned);
+                grid.setTemperature(i, j, grid.temperature(i, j) + heatRelease * burned);
+                grid.setDensity(i, j, grid.density(i, j) + smokeRelease * burned);
+            }
+        }
+    }
+
     void Solver::step(Grid &grid, float dt) {
         const Eigen::ArrayXXf velX = grid.velocityXField();
         const Eigen::ArrayXXf velY = grid.velocityYField();
@@ -156,6 +173,7 @@ namespace Lodge {
         grid.velocityXField() = newVelX;
         grid.velocityYField() = newVelY;
 
+        applyCombustion(grid, 0.016);
         applyBuoyancy(grid, dt, 1.0);
         project(grid);
     }

@@ -7,9 +7,6 @@ namespace Lodge {
           m_velocityY(Eigen::ArrayXXf::Zero(width, height)),
           m_density(Eigen::ArrayXXf::Zero(width, height)),
           m_temperature(Eigen::ArrayXXf::Zero(width, height)),
-          m_velocityXOld(Eigen::ArrayXXf::Zero(width, height)),
-          m_velocityYOld(Eigen::ArrayXXf::Zero(width, height)),
-          m_densityOld(Eigen::ArrayXXf::Zero(width, height)),
-          m_temperatureOld(Eigen::ArrayXXf::Zero(width, height)) {
-    }
+          m_fuel(Eigen::ArrayXXf::Zero(width, height)) {
+    };
 }

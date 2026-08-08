@@ -27,6 +27,9 @@ namespace Lodge {
 
         void applyBuoyancy(Grid &grid, float dt, float buoyancyStrength = 1.0);
 
+        void applyCombustion(Grid &grid, float dt, float burnRate = 0.5, float heatRelease = 8.0,
+                             float smokeRelease = 1.0);
+
         const Eigen::SparseMatrix<float> &laplacian() const { return m_laplacian; }
 
         static constexpr int idx(int i, int j, int width) { return j + width * i; }

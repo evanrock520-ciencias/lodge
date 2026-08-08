@@ -5,6 +5,34 @@
 
 using namespace Lodge;
 
+constexpr float MAX_TEMP = 6.0f; // ← falta
+
+Color temperatureToColor(float temp, float maxTemp) {
+    float t = std::clamp(temp / maxTemp, 0.0f, 1.0f);
+
+    struct Stop {
+        float pos;
+        unsigned char r, g, b;
+    };
+    static const Stop stops[] = {
+        {0.0f, 0, 0, 0},
+        {0.3f, 180, 0, 0},
+        {0.6f, 255, 120, 0},
+        {1.0f, 255, 255, 100},
+    };
+
+    for (int i = 0; i < 3; i++) {
+        if (t >= stops[i].pos && t <= stops[i + 1].pos) {
+            float localT = (t - stops[i].pos) / (stops[i + 1].pos - stops[i].pos);
+            unsigned char r = static_cast<unsigned char>(stops[i].r + (stops[i + 1].r - stops[i].r) * localT);
+            unsigned char g = static_cast<unsigned char>(stops[i].g + (stops[i + 1].g - stops[i].g) * localT);
+            unsigned char b = static_cast<unsigned char>(stops[i].b + (stops[i + 1].b - stops[i].b) * localT);
+            return {r, g, b, 255};
+        }
+    }
+    return {255, 255, 100, 255};
+}
+
 class GridRenderer {
 public:
     GridRenderer(int gridWidth, int gridHeight)
@@ -22,11 +50,13 @@ public:
     void draw(const Grid &grid, const int screenWidth, const int screenHeight) {
         for (int j = 0; j < grid.height(); j++) {
             for (int i = 0; i < grid.width(); i++) {
-                float d = grid.density(i, j);
-                if (d < 0.0f) d = 0.0f;
-                if (d > 1.0f) d = 1.0f;
-                const auto v = static_cast<unsigned char>(d * 255);
-                m_pixels[j * grid.width() + i] = {v, v, v, 255};
+                float temp = grid.temperature(i, j);
+                float dens = grid.density(i, j);
+
+                Color c = temperatureToColor(temp, MAX_TEMP);
+                c.a = static_cast<unsigned char>(std::clamp(dens, 0.0f, 1.0f) * 255);
+
+                m_pixels[j * grid.width() + i] = c;
             }
         }
         UpdateTexture(m_texture, m_pixels.data());
@@ -42,9 +72,9 @@ private:
 };
 
 int main() {
-    constexpr int screenWidth = 800;
-    constexpr int screenHeight = 800;
-    constexpr int gridSize = 64;
+    constexpr int screenWidth = 1200;
+    constexpr int screenHeight = 1200;
+    constexpr int gridSize = 128;
 
     InitWindow(screenWidth, screenHeight, "Fire Solver");
     SetTargetFPS(60);
@@ -62,8 +92,7 @@ int main() {
 
         for (int j = sourceY - sourceRadius; j < sourceY + sourceRadius; j++) {
             for (int i = sourceX - sourceRadius; i < sourceX + sourceRadius; i++) {
-                grid.setDensity(i, j, 1.0f);
-                grid.setTemperature(i, j, 5.0f);
+                grid.setFuel(i, j, 1.0f);
             }
         }
 
