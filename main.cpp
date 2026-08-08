@@ -50,24 +50,32 @@ int main() {
     SetTargetFPS(60);
 
     Grid grid(gridSize, gridSize);
+    Solver solver;
     GridRenderer renderer(gridSize, gridSize);
 
-    for (int j = gridSize / 2 - 5; j < gridSize / 2 + 5; j++) {
-        for (int i = gridSize / 2 - 5; i < gridSize / 2 + 5; i++) {
-            grid.setDensity(i, j, 1.0f);
-        }
-    }
+    const float cx = gridSize / 2.0f;
+    const float cy = gridSize / 2.0f;
 
     for (int j = 0; j < gridSize; j++) {
         for (int i = 0; i < gridSize; i++) {
-            grid.setVelocity(i, j, 5.0f, 2.0f);
+            const float dx = i - cx;
+            const float dy = j - cy;
+            const float dist = std::sqrt(dx * dx + dy * dy) + 1e-5f;
+
+            const float strength = 15.0f;
+            const float vx = -dy / dist * strength;
+            const float vy = dx / dist * strength;
+
+            grid.setVelocity(i, j, vx, vy);
+            
+            if (dist < 10.0f) {
+                grid.setDensity(i, j, 1.0f);
+            }
         }
     }
 
     while (!WindowShouldClose()) {
-        constexpr Solver solver;
         const float dt = GetFrameTime();
-
         solver.step(grid, dt);
 
         BeginDrawing();
