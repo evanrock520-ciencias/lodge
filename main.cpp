@@ -53,29 +53,20 @@ int main() {
     Solver solver;
     GridRenderer renderer(gridSize, gridSize);
 
-    const float cx = gridSize / 2.0f;
-    const float cy = gridSize / 2.0f;
-
-    for (int j = 0; j < gridSize; j++) {
-        for (int i = 0; i < gridSize; i++) {
-            const float dx = i - cx;
-            const float dy = j - cy;
-            const float dist = std::sqrt(dx * dx + dy * dy) + 1e-5f;
-
-            const float strength = 15.0f;
-            const float vx = -dy / dist * strength;
-            const float vy = dx / dist * strength;
-
-            grid.setVelocity(i, j, vx, vy);
-            
-            if (dist < 10.0f) {
-                grid.setDensity(i, j, 1.0f);
-            }
-        }
-    }
+    const int sourceX = gridSize / 2;
+    const int sourceY = gridSize - 5;
+    const int sourceRadius = 4;
 
     while (!WindowShouldClose()) {
         const float dt = GetFrameTime();
+
+        for (int j = sourceY - sourceRadius; j < sourceY + sourceRadius; j++) {
+            for (int i = sourceX - sourceRadius; i < sourceX + sourceRadius; i++) {
+                grid.setDensity(i, j, 1.0f);
+                grid.setTemperature(i, j, 5.0f);
+            }
+        }
+
         solver.step(grid, dt);
 
         BeginDrawing();

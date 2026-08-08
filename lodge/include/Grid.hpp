@@ -15,15 +15,21 @@ namespace Lodge {
 
         float velocityX(const int i, const int j) const { return m_velocityX(i, j); }
         float velocityY(const int i, const int j) const { return m_velocityY(i, j); }
+        float temperature(const int i, const int j) const { return m_temperature(i, j); }
 
         void setVelocity(const int i, const int j, const float vx, const float vy) {
             m_velocityX(i, j) = vx;
             m_velocityY(i, j) = vy;
         }
 
+        void setTemperature(const int i, const int j, const float t) {
+            m_temperature(i, j) = t;
+        }
+
         Eigen::ArrayXXf &densityField() { return m_density; }
         Eigen::ArrayXXf &velocityXField() { return m_velocityX; }
         Eigen::ArrayXXf &velocityYField() { return m_velocityY; }
+        Eigen::ArrayXXf &temperatureField() { return m_temperature; }
 
     private:
         int m_width;

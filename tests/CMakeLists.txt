@@ -1,6 +1,7 @@
 add_executable(lodge_tests
         test_laplacian.cpp
         test_divergence.cpp
+        test_buoyancy.cpp
 )
 
 target_link_libraries(lodge_tests

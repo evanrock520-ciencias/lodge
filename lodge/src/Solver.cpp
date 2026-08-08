@@ -129,11 +129,26 @@ namespace Lodge {
         grid.velocityYField() -= gradY;
     }
 
+    void Solver::applyBuoyancy(Grid &grid, float dt, float buoyancyStrength) {
+        const int width = grid.width();
+        const int height = grid.height();
+
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                const float temperature = grid.temperature(i, j);
+                const float force = buoyancyStrength * temperature * dt;
+                float newVy = grid.velocityY(i, j) - force;
+                grid.setVelocity(i, j, grid.velocityX(i, j), newVy);
+            }
+        }
+    }
+
     void Solver::step(Grid &grid, float dt) {
         const Eigen::ArrayXXf velX = grid.velocityXField();
         const Eigen::ArrayXXf velY = grid.velocityYField();
 
         grid.densityField() = advect(grid.densityField(), velX, velY, dt);
+        grid.temperatureField() = advect(grid.temperatureField(), velX, velY, dt);
 
         const Eigen::ArrayXXf newVelX = advect(velX, velX, velY, dt);
         const Eigen::ArrayXXf newVelY = advect(velY, velX, velY, dt);
@@ -141,26 +156,8 @@ namespace Lodge {
         grid.velocityXField() = newVelX;
         grid.velocityYField() = newVelY;
 
-        auto enforceBoundaries = [](Eigen::ArrayXXf &vx, Eigen::ArrayXXf &vy) {
-            int w = vx.rows();
-            int h = vx.cols();
-            for (int j = 0; j < h; ++j) {
-                vx(0, j) = 0.0f;
-                vy(0, j) = 0.0f;
-                vx(w - 1, j) = 0.0f;
-                vy(w - 1, j) = 0.0f;
-            }
-            for (int i = 0; i < w; ++i) {
-                vx(i, 0) = 0.0f;
-                vy(i, 0) = 0.0f;
-                vx(i, h - 1) = 0.0f;
-                vy(i, h - 1) = 0.0f;
-            }
-        };
-
-        enforceBoundaries(grid.velocityXField(), grid.velocityYField());
+        applyBuoyancy(grid, dt, 1.0);
         project(grid);
-        enforceBoundaries(grid.velocityXField(), grid.velocityYField());
     }
 
     float Solver::sampleBilinear(const Eigen::ArrayXXf &field, float x, float y) {
