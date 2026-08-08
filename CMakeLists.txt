@@ -14,6 +14,12 @@ FetchContent_Declare(
         GIT_TAG 3.4.0
 )
 
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
 set(RAYLIB_VERSION 5.5)
 find_package(raylib ${RAYLIB_VERSION} QUIET)
 if (NOT raylib_FOUND)
@@ -24,12 +30,18 @@ if (NOT raylib_FOUND)
     )
 endif ()
 
-FetchContent_MakeAvailable(eigen)
+set(EIGEN_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(eigen googletest)
 if (NOT raylib_FOUND)
     FetchContent_MakeAvailable(raylib)
 endif ()
 
 add_subdirectory(lodge)
+
+enable_testing()
+add_subdirectory(tests)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
